@@ -26,7 +26,7 @@ Goal: working `npm run dev` matching SETUP_SPEC.
 - [x] 0.5 Drop in `svelte.config.js`, `vite.config.ts`, `tsconfig.json`, `eslint.config.js` per SETUP_SPEC §5–6
 - [x] 0.6 `src/app.css` with `@theme` amber placeholder + `@custom-variant dark`; force `<html class="dark">` in `src/app.html`; import `app.css` in root `+layout.svelte`
 - [x] 0.7 `prisma.config.ts`, `prisma/schema.prisma`, `src/lib/prisma.ts` singleton; create local Postgres DB; `.env` from `.env.example`
-- [ ] 0.8 `npm run validate && npm run build` both pass
+- [x] 0.8 `npm run validate && npm run build` both pass
 
 ## Epic 1 — Skeleton, module boundaries, observability [deps: E0]
 
