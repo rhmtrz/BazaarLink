@@ -1,4 +1,4 @@
-# RugBridge — Phase 0 Issue List
+# bazaarLink — Phase 0 Issue List
 
 Scope: environment setup + Phase 0 concierge MVP (months 1–3) from
 `docs/architecture-plan.md` §8. Tracker: this file. Convert to GitHub

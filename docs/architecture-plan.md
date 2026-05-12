@@ -1,4 +1,4 @@
-# RugBridge — Architecture & Strategy Plan
+# bazaarLink — Architecture & Strategy Plan
 
 Response to `idea-clearation.md`. Answers all 10 questions and proposes an
 MVP scope realistic for a solo developer.
