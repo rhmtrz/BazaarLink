@@ -20,7 +20,7 @@ Goal: working `npm run dev` matching SETUP_SPEC.
 
 - [x] 0.1 `nvm install 24 && nvm use 24`; create `.nvmrc` (`v24.15.0`) + `.npmrc` (`engine-strict=true`)
 - [x] 0.2 `npx sv create .` (minimal + TS + Prettier + ESLint); commit scaffold
-- [ ] 0.3 Add `.gitignore`, `.prettierrc`, `.prettierignore` per SETUP_SPEC §3
+- [x] 0.3 Add `.gitignore`, `.prettierrc`, `.prettierignore` per SETUP_SPEC §3
 - [ ] 0.4 Install dev + runtime deps from SETUP_SPEC §4 (single `npm i -D …` + `npm i …`)
 - [ ] 0.5 Drop in `svelte.config.js`, `vite.config.ts`, `tsconfig.json`, `eslint.config.js` per SETUP_SPEC §5–6
 - [ ] 0.6 `src/app.css` with `@theme` amber placeholder + `@custom-variant dark`; force `<html class="dark">` in `src/app.html`; import `app.css` in root `+layout.svelte`
