@@ -1,3 +1,11 @@
+## Project Configuration
+
+- **Language**: TypeScript
+- **Package Manager**: npm
+- **Add-ons**: prettier, eslint, tailwindcss, sveltekit-adapter, vitest, playwright
+
+---
+
 # CLAUDE.md — bazaarLink
 
 B2B sourcing marketplace for Afghan rugs. Solo-developer build.
