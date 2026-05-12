@@ -18,7 +18,7 @@ Dependency notation: `[deps: E0, E2]` means depends on Epic 0 and Epic 2.
 ## Epic 0 — Environment bootstrap  [deps: none]
 Goal: working `npm run dev` matching SETUP_SPEC.
 
-- [ ] 0.1 `nvm install 24 && nvm use 24`; create `.nvmrc` (`v24.15.0`) + `.npmrc` (`engine-strict=true`)
+- [x] 0.1 `nvm install 24 && nvm use 24`; create `.nvmrc` (`v24.15.0`) + `.npmrc` (`engine-strict=true`)
 - [ ] 0.2 `npx sv create .` (minimal + TS + Prettier + ESLint); commit scaffold
 - [ ] 0.3 Add `.gitignore`, `.prettierrc`, `.prettierignore` per SETUP_SPEC §3
 - [ ] 0.4 Install dev + runtime deps from SETUP_SPEC §4 (single `npm i -D …` + `npm i …`)
