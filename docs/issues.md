@@ -24,7 +24,7 @@ Goal: working `npm run dev` matching SETUP_SPEC.
 - [x] 0.3 Add `.gitignore`, `.prettierrc`, `.prettierignore` per SETUP_SPEC §3
 - [x] 0.4 Install dev + runtime deps from SETUP_SPEC §4 (single `npm i -D …` + `npm i …`)
 - [x] 0.5 Drop in `svelte.config.js`, `vite.config.ts`, `tsconfig.json`, `eslint.config.js` per SETUP_SPEC §5–6
-- [ ] 0.6 `src/app.css` with `@theme` amber placeholder + `@custom-variant dark`; force `<html class="dark">` in `src/app.html`; import `app.css` in root `+layout.svelte`
+- [x] 0.6 `src/app.css` with `@theme` amber placeholder + `@custom-variant dark`; force `<html class="dark">` in `src/app.html`; import `app.css` in root `+layout.svelte`
 - [ ] 0.7 `prisma.config.ts`, `prisma/schema.prisma`, `src/lib/prisma.ts` singleton; create local Postgres DB; `.env` from `.env.example`
 - [ ] 0.8 `npm run validate && npm run build` both pass
 
