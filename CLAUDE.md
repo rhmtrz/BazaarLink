@@ -9,9 +9,9 @@
 # CLAUDE.md — bazaarLink
 
 B2B sourcing marketplace for Afghan rugs. Solo-developer build.
-Authoritative context: `docs/architecture-plan.md` (strategy),
-`docs/issues.md` (Phase 0 issue list), `SETUP_SPEC.md` (environment recipe).
-If those documents conflict with this file, this file wins.
+Authoritative context: `docs/architecture-plan.md` (strategy) and
+`docs/issues.md` (Phase 0 issue list). If those documents conflict with
+this file, this file wins.
 
 ## Stack & versions
 
@@ -41,7 +41,7 @@ If those documents conflict with this file, this file wins.
 ## Theme
 
 - **Dark mode only at boot.** `<html class="dark">` hard-coded in `src/app.html`. Do not add a light-mode toggle or reintroduce light styles without an explicit user request.
-- **Placeholder palette:** amber-based values from `SETUP_SPEC` §7 (`--color-primary: #d97706` etc.). These are temporary. Real brand colors are a future issue.
+- **Placeholder palette:** amber-based values (`--color-primary: #d97706`, `--color-primary-dark: #b45309`, `--color-primary-light: #f59e0b`, plus secondary orange and accent teal). These are temporary. Real brand colors are a future issue.
 - All Tailwind colors go through `@theme` tokens — never hardcode hex in components.
 
 ## Conventions
