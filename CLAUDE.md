@@ -55,6 +55,19 @@ this file, this file wins.
 - Prisma: `@map()` for snake_case columns, `@@map()` for table names.
 - Path alias: `$lib` → `src/lib/` (SvelteKit default).
 
+## Svelte 5 / SvelteKit conventions
+
+- **Never module-level `$state` on the server.** Cross-request leak — sessions bleed between users. Share reactive state via SvelteKit's context API (`setContext` / `getContext`, or a typed `createContext()` helper).
+- **`$derived()` for computed values, `$effect()` for side effects only** (logging, analytics, DOM, subscriptions). Don't use `$effect` to sync state.
+- **`$effect()` returns cleanup.** Always teardown subscriptions/listeners with a returned function.
+- **`$bindable()` for two-way binding** between parent and child component.
+- **`{#snippet}` for reusable template fragments.** No render-prop helpers, no slot-prop hacks.
+- **Forms use `use:enhance`.** Progressive enhancement — works without JS, upgrades when JS loads.
+- **Validate twice.** Client-side for UX, server-side as the source of truth. Server is authoritative.
+- **Errors via SvelteKit helpers.** Use `error(status, message)` and `redirect(status, location)` from `@sveltejs/kit`. `+error.svelte` for route-level boundaries.
+- **Cache invalidation.** After mutations, use `invalidate(key)` or `invalidateAll()` rather than manual refetch.
+- **Accessibility baseline.** Semantic HTML, keyboard navigation on every interactive element, ARIA labels where text isn't visible, WCAG-AA contrast against the dark palette.
+
 ## Testing scope (Phase 0)
 
 Write tests for, and only for:
