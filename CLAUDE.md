@@ -1,9 +1,17 @@
+## Project Configuration
+
+- **Language**: TypeScript
+- **Package Manager**: npm
+- **Add-ons**: prettier, eslint, tailwindcss, sveltekit-adapter, vitest, playwright
+
+---
+
 # CLAUDE.md — bazaarLink
 
 B2B sourcing marketplace for Afghan rugs. Solo-developer build.
-Authoritative context: `docs/architecture-plan.md` (strategy),
-`docs/issues.md` (Phase 0 issue list), `SETUP_SPEC.md` (environment recipe).
-If those documents conflict with this file, this file wins.
+Authoritative context: `docs/architecture-plan.md` (strategy) and
+`docs/issues.md` (Phase 0 issue list). If those documents conflict with
+this file, this file wins.
 
 ## Stack & versions
 
@@ -29,17 +37,18 @@ If those documents conflict with this file, this file wins.
 5. **Outbox for every external side effect.** Email, Ably publish, PSP call, webhook — none of them happen inside an HTTP handler. Write the outbox row in the same transaction as the state change; the worker fans out.
 6. **`canTransition()` is the only place state machine guards live.** Pure function. Exhaustively table-tested.
 7. **RBAC in middleware, not handlers.** Use `requireAuth()`, `requireRole(...)`, `requireOwnership()` from `src/lib/server/guards.ts`. Don't re-implement role checks per route.
+8. **Prisma migrations are tracked in git.** Per architecture-plan §9 ("migrations checked into git, reviewed before applying"). Never add `prisma/migrations/` to `.gitignore`, even though the scaffold recipe suggested it.
 
 ## Theme
 
 - **Dark mode only at boot.** `<html class="dark">` hard-coded in `src/app.html`. Do not add a light-mode toggle or reintroduce light styles without an explicit user request.
-- **Placeholder palette:** amber-based values from `SETUP_SPEC` §7 (`--color-primary: #d97706` etc.). These are temporary. Real brand colors are a future issue.
+- **Placeholder palette:** amber-based values (`--color-primary: #d97706`, `--color-primary-dark: #b45309`, `--color-primary-light: #f59e0b`, plus secondary orange and accent teal). These are temporary. Real brand colors are a future issue.
 - All Tailwind colors go through `@theme` tokens — never hardcode hex in components.
 
 ## Conventions
 
 - Tabs, single quotes, no trailing commas, 100-char width (Prettier-enforced).
-- **No code comments** unless the *why* is non-obvious (hidden constraint, subtle invariant, workaround). Never comment what the code does — naming should do that.
+- **No code comments** unless the _why_ is non-obvious (hidden constraint, subtle invariant, workaround). Never comment what the code does — naming should do that.
 - **No multi-paragraph docstrings.** One short line max.
 - **No backwards-compat shims, no `_unused` placeholders, no "removed X" comments.** Delete dead code, don't memorialize it.
 - Custom string PKs where domain meaningful (e.g. `supplierCode`, `orderCode`); UUIDs otherwise.
@@ -96,7 +105,7 @@ npm run db:studio        # Prisma Studio
 - **Branch per epic** (`epic-0-bootstrap`, `epic-2-auth`, …). PR to `main` even solo — the diff view is the review checkpoint.
 - **User reads every diff before commit.** No exceptions.
 - **Claude must run the code, not just write it.** `npm run validate` after every sub-task; manual browser check for UI changes.
-- **Commit messages:** imperative subject under 70 chars, body explains *why*, include the `Co-Authored-By` trailer per repo policy.
+- **Commit messages:** imperative subject under 70 chars, body explains _why_, include the `Co-Authored-By` trailer per repo policy.
 
 ## Deployment
 
@@ -106,6 +115,7 @@ npm run db:studio        # Prisma Studio
 ## When CLAUDE drifts from this file
 
 Stop and call it out. Examples to push back on:
+
 - "Let me add a helper file for…" → probably premature abstraction.
 - "I'll add a try/catch here just in case…" → no, only validate at boundaries.
 - "I'll add a config option for…" → no flags without a current need.

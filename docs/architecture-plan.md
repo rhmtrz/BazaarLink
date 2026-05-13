@@ -23,6 +23,7 @@ stated preferences (notably "self-serve from day one" vs concierge, and
 ## 1. Is custom SvelteKit a good choice? — **Yes, with one caveat**
 
 Reasons it fits:
+
 - This is not an ecommerce store; it's a **workflow + RFQ + chat + escrow**
   platform. Product-catalog/cart frameworks would fight you, not help.
 - SvelteKit's full-stack model (server actions, `+page.server.ts`, hooks) is
@@ -39,7 +40,7 @@ See §6.
 Both are catalog-and-checkout engines. Neither has first-class RFQ, neither
 has chat, neither has multi-vendor commission accounting beyond plugins. You
 would override 70% of them. The only scenario where Medusa makes sense is if
-you ever add a *fixed-price* sub-marketplace alongside the RFQ flow — and
+you ever add a _fixed-price_ sub-marketplace alongside the RFQ flow — and
 that's a later-phase decision, not an MVP one.
 
 ## 3. Backend architecture
@@ -67,6 +68,7 @@ service functions, not direct Prisma access — this is what lets you extract
 a service later if you ever need to.
 
 Stack:
+
 - **Postgres** as the single source of truth (escrow, chat history, RFQ
   state). Logical replication off → nothing fancy until you need it.
 - **Prisma** is fine. Drizzle has nicer migrations but Prisma's familiarity
@@ -93,6 +95,7 @@ Order:  PENDING_ESCROW → ESCROW_FUNDED → INSPECTION_REQUESTED
 ```
 
 Implementation:
+
 - A `transitions` table that records every state change as an immutable
   event (who, when, from, to, reason). This is your audit log and your
   debugging tool when a deal goes sideways.
@@ -115,8 +118,9 @@ Inspection passed:    Escrow        -1000  |  Supplier     +900
 ```
 
 Why ledger, not "commission_rate column on Order":
+
 - Refunds, partial refunds, disputes, and currency conversions all become
-  *additional journal entries* instead of column edits — your books are
+  _additional journal entries_ instead of column edits — your books are
   always consistent.
 - Auditable. When a supplier asks "why did I receive $897 not $900?" you
   can show them every entry.
@@ -131,11 +135,11 @@ yourself as a solo dev** while also building escrow, RFQ, and ledger.
 
 Recommended: **Ably** (or Supabase Realtime as the cheaper alternative).
 
-|  | Supabase Realtime | Ably |
-|---|---|---|
-| Cost at <10k msg/day | Free tier covers it | ~$30/mo |
-| Auth integration | Tied to Supabase Auth (friction with Lucia) | Token-based, stack-agnostic |
-| Vendor lock-in | High (postgres-replication coupled) | Low (standard pub/sub) |
+|                      | Supabase Realtime                           | Ably                        |
+| -------------------- | ------------------------------------------- | --------------------------- |
+| Cost at <10k msg/day | Free tier covers it                         | ~$30/mo                     |
+| Auth integration     | Tied to Supabase Auth (friction with Lucia) | Token-based, stack-agnostic |
+| Vendor lock-in       | High (postgres-replication coupled)         | Low (standard pub/sub)      |
 
 Recommendation: **Ably**. Lower lock-in, you keep Postgres + your own auth
 (Lucia or Auth.js). Chat messages get written to Postgres (authoritative)
@@ -152,6 +156,7 @@ auth complexity grows.
 ## 7. Escrow & payment-holding — **The hardest part. Plan for 3+ months.**
 
 Afghanistan-specific reality:
+
 - Most Afghan banks have severely restricted SWIFT access since 2021.
 - US (OFAC) and EU sanctions regimes apply to many counterparties.
 - Wise, Payoneer, Stripe, and most PSPs **do not support AF**.
@@ -168,6 +173,7 @@ Afghanistan-specific reality:
      will balk.
 
 Recommendation:
+
 - **Incorporate the platform in UAE.** Don't try to operate this from a
   US/EU entity — your buyer-side compliance burden becomes enormous.
 - **Partner with Tazapay or a similar B2B escrow provider** rather than
@@ -177,7 +183,7 @@ Recommendation:
 - **KYC/KYB via Sumsub or Veriff.** Required for any escrow partner anyway.
 
 This is the area where I'd most encourage you to pause engineering and have
-5+ conversations with payment partners *before* writing escrow code. The
+5+ conversations with payment partners _before_ writing escrow code. The
 wrong partner choice gets baked into your data model.
 
 ## 8. MVP scope — **Concierge first, even though you said full self-serve**
@@ -188,6 +194,7 @@ before first real transaction. By then you'll have built features no real
 user asked for.
 
 **Phase 0 — Concierge (months 1–3)**
+
 - Auth (Lucia), supplier profiles, listings with photos, RFQ submission,
   realtime chat (Ably), order record, basic admin dashboard.
 - **No escrow integration.** You manually broker payments — record them in
@@ -198,6 +205,7 @@ user asked for.
   generate enough transaction data to negotiate with payment partners.
 
 **Phase 1 — Real escrow + inspection (months 4–6)**
+
 - Tazapay (or similar) integration, KYB onboarding, automated escrow
   state transitions wired to the ledger.
 - Inspection workflow: third-party inspector uploads PDF + photos,
@@ -208,6 +216,7 @@ user asked for.
   listings without trouble.
 
 **Phase 2 — Self-serve, search, multilingual (months 7–9)**
+
 - Open supplier signup, KYC pipeline, listing moderation queue.
 - Shipment tracking integrations (17track, AfterShip).
 - **Multilingual UI** (Dari, Pashto, English, Arabic, Mandarin) +
@@ -224,6 +233,7 @@ user asked for.
   Until then, stay on FTS. Boring tech wins.
 
 **Phase 3 — Mobile + scale**
+
 - PWA-first for suppliers (most have Android, intermittent connectivity —
   PWA + offline queue beats native here). Native only if PWA hits limits.
 - Read replicas, queue scaling, observability hardening.
@@ -231,6 +241,7 @@ user asked for.
 ## 9. Scalability & long-term maintainability
 
 Things to do **now** that pay off later:
+
 - Strict module boundaries via folder structure (§3) and a lint rule
   forbidding cross-module Prisma imports.
 - Outbox pattern for every external side effect from day one.
@@ -241,6 +252,7 @@ Things to do **now** that pay off later:
 - Database migrations checked into git, reviewed before applying.
 
 Things to **not** do now:
+
 - Microservices. You're one person.
 - Event sourcing for everything. Just for state machines (§4) and ledger (§5).
 - Read replicas, sharding, multi-region. Wait for the metric to demand it.
@@ -249,6 +261,7 @@ Things to **not** do now:
 ## 10. Team structure & priorities
 
 Order of hires, in priority:
+
 1. **Trade operations lead** (not engineer) — someone with Afghan export
    experience, freight-forwarder relationships, inspection contacts. This
    person un-blocks the platform 10× more than another dev. Hire by month 2.
