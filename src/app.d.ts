@@ -8,6 +8,12 @@ declare global {
 		}
 		interface Locals {
 			requestId: string;
+			user: {
+				id: string;
+				email: string;
+				role: 'BUYER' | 'SUPPLIER' | 'ADMIN' | 'INSPECTOR';
+			} | null;
+			session: { id: string } | null;
 		}
 		// interface PageData {}
 		// interface PageState {}

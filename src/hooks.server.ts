@@ -4,12 +4,36 @@ import { sequence } from '@sveltejs/kit/hooks';
 import * as Sentry from '@sentry/sveltekit';
 import { env } from '$env/dynamic/private';
 import { logger } from '$lib/server/logger';
+import { AUTH_COOKIE_NAME, loadSession } from '$lib/server/auth';
 
 Sentry.init({
 	dsn: env.SENTRY_DSN,
 	tracesSampleRate: 0,
 	enabled: !!env.SENTRY_DSN
 });
+
+const userHandle: Handle = async ({ event, resolve }) => {
+	event.locals.user = null;
+	event.locals.session = null;
+
+	const token = event.cookies.get(AUTH_COOKIE_NAME);
+	if (token) {
+		const loaded = await loadSession(token);
+		if (loaded) {
+			event.locals.user = {
+				id: loaded.user.id,
+				email: loaded.user.email,
+				role: loaded.user.role
+			};
+			event.locals.session = { id: loaded.session.id };
+			Sentry.setUser({ id: loaded.user.id });
+		} else {
+			event.cookies.delete(AUTH_COOKIE_NAME, { path: '/' });
+		}
+	}
+
+	return resolve(event);
+};
 
 const requestHandle: Handle = async ({ event, resolve }) => {
 	const requestId = event.request.headers.get('x-request-id') ?? randomUUID();
@@ -24,6 +48,7 @@ const requestHandle: Handle = async ({ event, resolve }) => {
 	logger.info(
 		{
 			requestId,
+			userId: event.locals.user?.id ?? null,
 			method: event.request.method,
 			path: event.url.pathname,
 			status: response.status,
@@ -35,7 +60,7 @@ const requestHandle: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-export const handle = sequence(Sentry.sentryHandle(), requestHandle);
+export const handle = sequence(Sentry.sentryHandle(), userHandle, requestHandle);
 
 const requestHandleError: HandleServerError = ({ error, event, status, message }) => {
 	const requestId = event.locals.requestId ?? 'unknown';
