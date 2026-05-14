@@ -45,5 +45,31 @@ export default defineConfig(
 			],
 			'@typescript-eslint/no-explicit-any': 'warn'
 		}
+	},
+	{
+		files: ['src/**/*.ts', 'src/**/*.svelte'],
+		rules: {
+			'no-restricted-imports': [
+				'error',
+				{
+					paths: [
+						{
+							name: '@prisma/client',
+							message:
+								'Only src/lib/server/prisma.ts and src/lib/server/*/service.ts may import @prisma/client. Go through the module service.'
+						},
+						{
+							name: '$lib/server/prisma',
+							message:
+								'The prisma singleton is reserved for src/lib/server/*/service.ts. Go through the module service.'
+						}
+					]
+				}
+			]
+		}
+	},
+	{
+		files: ['src/lib/server/prisma.ts', 'src/lib/server/*/service.ts'],
+		rules: { 'no-restricted-imports': 'off' }
 	}
 );
