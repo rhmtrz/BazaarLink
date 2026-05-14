@@ -5,7 +5,7 @@ import type { Cookies } from '@sveltejs/kit';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { z } from 'zod';
-import { AuditEventType, type Session, type User } from '@prisma/client';
+import type { Session, User } from '@prisma/client';
 import { prisma } from '$lib/server/prisma';
 import { recordAuditEvent } from '$lib/server/audit';
 
@@ -99,7 +99,7 @@ export async function register(input: unknown, ctx: SessionContext): Promise<Aut
 
 	const result = await startSession(user, ctx);
 	await recordAuditEvent({
-		type: AuditEventType.REGISTER,
+		type: 'REGISTER',
 		actorUserId: user.id,
 		sessionId: result.sessionId,
 		ipAddress: ctx.ipAddress,
@@ -132,7 +132,7 @@ export async function login(input: unknown, ctx: SessionContext): Promise<AuthRe
 
 	const result = await startSession(user, ctx);
 	await recordAuditEvent({
-		type: AuditEventType.LOGIN,
+		type: 'LOGIN',
 		actorUserId: user.id,
 		sessionId: result.sessionId,
 		ipAddress: ctx.ipAddress,
@@ -140,7 +140,7 @@ export async function login(input: unknown, ctx: SessionContext): Promise<AuthRe
 	});
 	if (newDevice) {
 		await recordAuditEvent({
-			type: AuditEventType.LOGIN_FROM_NEW_DEVICE,
+			type: 'LOGIN_FROM_NEW_DEVICE',
 			actorUserId: user.id,
 			sessionId: result.sessionId,
 			ipAddress: ctx.ipAddress,
@@ -162,7 +162,7 @@ export async function logout(sessionId: string, ctx: SessionContext = {}): Promi
 		data: { revokedAt: new Date() }
 	});
 	await recordAuditEvent({
-		type: AuditEventType.LOGOUT,
+		type: 'LOGOUT',
 		actorUserId: s.userId,
 		sessionId,
 		ipAddress: ctx.ipAddress,
