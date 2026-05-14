@@ -1,1 +1,1 @@
-Session, JWT issuance, RBAC role/ownership guards.
+Auth service: bcryptjs password hashing, jsonwebtoken-signed sessions backed by the `sessions` table. Public API: `register`, `login`, `logout`, `loadSession`. Imported by `hooks.server.ts` (2.3) and form actions (2.8).
