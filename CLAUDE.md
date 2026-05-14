@@ -84,6 +84,7 @@ These are explicit "no" decisions from `docs/architecture-plan.md`. Don't propos
 
 - Lucia, Auth.js, NextAuth, or any auth library
 - MedusaJS, Saleor, or any commerce framework
+- Swagger / OpenAPI tooling (no external API consumer in Phase 0)
 - Custom WebSocket / Socket.IO server
 - Microservices, separate API gateway, BFF layer
 - Event sourcing outside the state machine + ledger
