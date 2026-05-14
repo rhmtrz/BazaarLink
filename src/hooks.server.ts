@@ -1,8 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
+import * as Sentry from '@sentry/sveltekit';
+import { env } from '$env/dynamic/private';
 import { logger } from '$lib/server/logger';
 
-export const handle: Handle = async ({ event, resolve }) => {
+Sentry.init({
+	dsn: env.SENTRY_DSN,
+	tracesSampleRate: 0,
+	enabled: !!env.SENTRY_DSN
+});
+
+const requestHandle: Handle = async ({ event, resolve }) => {
 	const requestId = event.request.headers.get('x-request-id') ?? randomUUID();
 	event.locals.requestId = requestId;
 
@@ -26,7 +35,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-export const handleError: HandleServerError = ({ error, event, status, message }) => {
+export const handle = sequence(Sentry.sentryHandle(), requestHandle);
+
+const requestHandleError: HandleServerError = ({ error, event, status, message }) => {
 	const requestId = event.locals.requestId ?? 'unknown';
 	const isServerError = status >= 500;
 
@@ -46,3 +57,5 @@ export const handleError: HandleServerError = ({ error, event, status, message }
 		requestId
 	};
 };
+
+export const handleError = Sentry.handleErrorWithSentry(requestHandleError);
