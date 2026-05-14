@@ -1,3 +1,4 @@
 export const routes = {
-	home: '/'
+	home: '/',
+	healthz: '/healthz'
 } as const;
