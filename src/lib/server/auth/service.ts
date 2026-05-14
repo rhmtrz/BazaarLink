@@ -5,9 +5,9 @@ import type { Cookies } from '@sveltejs/kit';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { z } from 'zod';
-import type { Session, User } from '@prisma/client';
+import { AuditEventType, type Session, type User } from '@prisma/client';
 import { prisma } from '$lib/server/prisma';
-import { logger } from '$lib/server/logger';
+import { recordAuditEvent } from '$lib/server/audit';
 
 export const AUTH_COOKIE_NAME = 'auth_token';
 
@@ -97,8 +97,15 @@ export async function register(input: unknown, ctx: SessionContext): Promise<Aut
 	const passwordHash = await hashPassword(parsed.data.password);
 	const user = await prisma.user.create({ data: { email, passwordHash } });
 
-	logger.info({ userId: user.id, event: 'register' }, 'auth');
-	return startSession(user, ctx);
+	const result = await startSession(user, ctx);
+	await recordAuditEvent({
+		type: AuditEventType.REGISTER,
+		actorUserId: user.id,
+		sessionId: result.sessionId,
+		ipAddress: ctx.ipAddress,
+		userAgent: ctx.userAgent
+	});
+	return result;
 }
 
 export async function login(input: unknown, ctx: SessionContext): Promise<AuthResult> {
@@ -116,16 +123,51 @@ export async function login(input: unknown, ctx: SessionContext): Promise<AuthRe
 	const ok = await verifyPassword(parsed.data.password, user.passwordHash);
 	if (!ok) throw error(401, 'Invalid email or password');
 
-	logger.info({ userId: user.id, event: 'login' }, 'auth');
-	return startSession(user, ctx);
+	const priorSession = ctx.userAgent
+		? await prisma.session.findFirst({
+				where: { userId: user.id, userAgent: ctx.userAgent }
+			})
+		: null;
+	const newDevice = ctx.userAgent != null && priorSession === null;
+
+	const result = await startSession(user, ctx);
+	await recordAuditEvent({
+		type: AuditEventType.LOGIN,
+		actorUserId: user.id,
+		sessionId: result.sessionId,
+		ipAddress: ctx.ipAddress,
+		userAgent: ctx.userAgent
+	});
+	if (newDevice) {
+		await recordAuditEvent({
+			type: AuditEventType.LOGIN_FROM_NEW_DEVICE,
+			actorUserId: user.id,
+			sessionId: result.sessionId,
+			ipAddress: ctx.ipAddress,
+			userAgent: ctx.userAgent
+		});
+	}
+	return result;
 }
 
-export async function logout(sessionId: string): Promise<void> {
+export async function logout(sessionId: string, ctx: SessionContext = {}): Promise<void> {
+	const s = await prisma.session.findUnique({
+		where: { id: sessionId },
+		select: { userId: true }
+	});
+	if (!s) return;
+
 	await prisma.session.updateMany({
 		where: { id: sessionId, revokedAt: null },
 		data: { revokedAt: new Date() }
 	});
-	logger.info({ sessionId, event: 'logout' }, 'auth');
+	await recordAuditEvent({
+		type: AuditEventType.LOGOUT,
+		actorUserId: s.userId,
+		sessionId,
+		ipAddress: ctx.ipAddress,
+		userAgent: ctx.userAgent
+	});
 }
 
 export function setAuthCookie(cookies: Cookies, token: string): void {
