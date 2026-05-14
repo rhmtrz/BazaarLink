@@ -4,7 +4,7 @@ import { sequence } from '@sveltejs/kit/hooks';
 import * as Sentry from '@sentry/sveltekit';
 import { env } from '$env/dynamic/private';
 import { logger } from '$lib/server/logger';
-import { AUTH_COOKIE_NAME, loadSession } from '$lib/server/auth';
+import { AUTH_COOKIE_NAME, clearAuthCookie, loadSession } from '$lib/server/auth';
 
 Sentry.init({
 	dsn: env.SENTRY_DSN,
@@ -28,7 +28,7 @@ const userHandle: Handle = async ({ event, resolve }) => {
 			event.locals.session = { id: loaded.session.id };
 			Sentry.setUser({ id: loaded.user.id });
 		} else {
-			event.cookies.delete(AUTH_COOKIE_NAME, { path: '/' });
+			clearAuthCookie(event.cookies);
 		}
 	}
 

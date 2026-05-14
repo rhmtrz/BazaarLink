@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { error } from '@sveltejs/kit';
+import type { Cookies } from '@sveltejs/kit';
+import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { z } from 'zod';
 import type { Session, User } from '@prisma/client';
@@ -124,6 +126,21 @@ export async function logout(sessionId: string): Promise<void> {
 		data: { revokedAt: new Date() }
 	});
 	logger.info({ sessionId, event: 'logout' }, 'auth');
+}
+
+export function setAuthCookie(cookies: Cookies, token: string): void {
+	const ttlSeconds = Math.floor(parseExpiryMs(getJwtExpiresIn()) / 1000);
+	cookies.set(AUTH_COOKIE_NAME, token, {
+		path: '/',
+		httpOnly: true,
+		secure: !dev,
+		sameSite: 'lax',
+		maxAge: ttlSeconds
+	});
+}
+
+export function clearAuthCookie(cookies: Cookies): void {
+	cookies.delete(AUTH_COOKIE_NAME, { path: '/' });
 }
 
 export async function loadSession(token: string): Promise<{ user: User; session: Session } | null> {
