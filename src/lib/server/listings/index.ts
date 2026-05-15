@@ -1,6 +1,13 @@
 export {
 	getListingById,
+	getListingWithPhotos,
 	getPhotoByObjectKey,
 	addPhotoToListing,
-	removePhotoFromListing
+	removePhotoFromListing,
+	listMyListings,
+	createListing,
+	updateListing,
+	publishListing,
+	unpublishListing,
+	deleteListing
 } from './service';
