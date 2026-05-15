@@ -5,5 +5,6 @@ export const routes = {
 	logout: '/logout',
 	changePassword: '/change-password',
 	admin: '/admin',
-	adminUserNew: '/admin/users/new'
+	adminUserNew: '/admin/users/new',
+	supplierProfile: '/supplier/profile'
 } as const;

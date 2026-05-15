@@ -1,1 +1,1 @@
-Supplier profiles, KYB state, onboarding workflow.
+Supplier profile service. `getSupplierByUserId` reads the supplier row for a user; `upsertSupplier` creates on first save (status = PENDING) or updates fields. Editing a REJECTED profile flips status back to PENDING (resubmission); PENDING/APPROVED stay put on edit. Admin approves/rejects via Epic 3.3.
