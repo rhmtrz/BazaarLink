@@ -6,5 +6,6 @@ export const routes = {
 	changePassword: '/change-password',
 	admin: '/admin',
 	adminUserNew: '/admin/users/new',
+	adminSuppliers: '/admin/suppliers',
 	supplierProfile: '/supplier/profile'
 } as const;

@@ -51,6 +51,8 @@ enum AuditEventType {
   LOGIN_FROM_NEW_DEVICE
   PASSWORD_CHANGED
   USER_INVITED
+  KYC_APPROVED
+  KYC_REJECTED
 }
 
 model AuditEvent {
