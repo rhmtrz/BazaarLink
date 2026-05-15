@@ -1,0 +1,1 @@
+Lead capture for concierge onboarding. `createLead` writes a `leads` row when a prospect submits the home-page inquiry form. Admin triages via Prisma Studio (Phase 0); the admin user-create flow (Phase C) will flip `lead.status` to `CONVERTED`.
