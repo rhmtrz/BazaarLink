@@ -1,0 +1,1 @@
+Local-disk storage primitive for listing photos. `saveImage`, `deleteImage`, `getImageFullPath` write/read under `UPLOADS_DIR` (default `./uploads`). R2 swap is a one-file change in `service.ts`; the public API stays.

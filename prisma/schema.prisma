@@ -149,9 +149,24 @@ model Listing {
   status               ListingStatus @default(DRAFT)
   createdAt            DateTime      @default(now()) @map("created_at")
   updatedAt            DateTime      @updatedAt @map("updated_at")
+  photos               Photo[]
 
   @@index([status])
   @@index([supplierId])
   @@index([createdAt])
   @@map("listings")
+}
+
+model Photo {
+  id           String   @id @default(uuid())
+  listingId    String   @map("listing_id")
+  listing      Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  objectKey    String   @unique @map("object_key")
+  originalName String   @map("original_name")
+  mimeType     String   @map("mime_type")
+  sizeBytes    Int      @map("size_bytes")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([listingId])
+  @@map("listing_photos")
 }

@@ -1,1 +1,1 @@
-Rug inventory, photos, listing lifecycle.
+Listings service. `getListingById`, `addPhotoToListing`, `removePhotoFromListing` ship with Epic 4.2 (photo upload). Each photo mutator enforces ownership: `listing.supplier.userId === userId`. 4.3 will add `createListing`, `updateListing`, `publishListing` for the supplier CRUD pages.
