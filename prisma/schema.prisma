@@ -23,6 +23,8 @@ model User {
   updatedAt          DateTime     @updatedAt @map("updated_at")
   sessions           Session[]
   auditEvents        AuditEvent[]
+  supplier           Supplier?
+  suppliersReviewed  Supplier[]   @relation("KycReviewer")
 
   @@map("users")
 }
@@ -49,6 +51,8 @@ enum AuditEventType {
   LOGIN_FROM_NEW_DEVICE
   PASSWORD_CHANGED
   USER_INVITED
+  KYC_APPROVED
+  KYC_REJECTED
 }
 
 model AuditEvent {
@@ -95,4 +99,29 @@ model Lead {
   @@index([status])
   @@index([createdAt])
   @@map("leads")
+}
+
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Supplier {
+  id              String    @id @default(uuid())
+  userId          String    @unique @map("user_id")
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName     String    @map("company_name")
+  country         String
+  phone           String?
+  kycStatus       KycStatus @default(PENDING) @map("kyc_status")
+  kycReason       String?   @map("kyc_reason")
+  kycReviewedAt   DateTime? @map("kyc_reviewed_at")
+  kycReviewedById String?   @map("kyc_reviewed_by_id")
+  kycReviewedBy   User?     @relation("KycReviewer", fields: [kycReviewedById], references: [id], onDelete: SetNull)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([kycStatus])
+  @@map("suppliers")
 }

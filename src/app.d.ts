@@ -13,6 +13,7 @@ declare global {
 				email: string;
 				role: 'BUYER' | 'SUPPLIER' | 'ADMIN' | 'INSPECTOR';
 				mustChangePassword: boolean;
+				supplier: { id: string; kycStatus: 'PENDING' | 'APPROVED' | 'REJECTED' } | null;
 			} | null;
 			session: { id: string } | null;
 		}

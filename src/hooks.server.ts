@@ -24,7 +24,10 @@ const userHandle: Handle = async ({ event, resolve }) => {
 				id: loaded.user.id,
 				email: loaded.user.email,
 				role: loaded.user.role,
-				mustChangePassword: loaded.user.mustChangePassword
+				mustChangePassword: loaded.user.mustChangePassword,
+				supplier: loaded.user.supplier
+					? { id: loaded.user.supplier.id, kycStatus: loaded.user.supplier.kycStatus }
+					: null
 			};
 			event.locals.session = { id: loaded.session.id };
 			Sentry.setUser({ id: loaded.user.id });
@@ -40,6 +43,17 @@ const userHandle: Handle = async ({ event, resolve }) => {
 		event.route.id !== '/logout'
 	) {
 		throw redirect(303, '/change-password');
+	}
+
+	if (
+		event.locals.user?.role === 'SUPPLIER' &&
+		event.locals.user.supplier === null &&
+		event.route.id &&
+		event.route.id !== '/supplier/profile' &&
+		event.route.id !== '/logout' &&
+		event.route.id !== '/change-password'
+	) {
+		throw redirect(303, '/supplier/profile');
 	}
 
 	return resolve(event);

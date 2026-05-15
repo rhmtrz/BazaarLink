@@ -6,7 +6,7 @@ import type { Cookies } from '@sveltejs/kit';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { z } from 'zod';
-import type { Session, User } from '@prisma/client';
+import type { Session, Supplier, User } from '@prisma/client';
 import { prisma } from '$lib/server/prisma';
 import { recordAuditEvent } from '$lib/server/audit';
 
@@ -273,13 +273,15 @@ export async function changePassword(userId: string, input: unknown): Promise<vo
 	});
 }
 
-export async function loadSession(token: string): Promise<{ user: User; session: Session } | null> {
+export async function loadSession(
+	token: string
+): Promise<{ user: User & { supplier: Supplier | null }; session: Session } | null> {
 	const payload = verifyJwt(token);
 	if (!payload) return null;
 
 	const session = await prisma.session.findUnique({
 		where: { id: payload.jti },
-		include: { user: true }
+		include: { user: { include: { supplier: true } } }
 	});
 	if (!session) return null;
 	if (session.revokedAt) return null;
