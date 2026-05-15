@@ -54,8 +54,8 @@
 		</form>
 
 		<p class="text-sm text-neutral-400">
-			Don't have an account?
-			<a href={resolve('/register')} class="text-primary-light hover:underline">Create one</a>
+			By invitation only.
+			<a href={resolve('/')} class="text-primary-light hover:underline">Request access</a>
 		</p>
 	</div>
 </main>

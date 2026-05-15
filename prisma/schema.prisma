@@ -14,14 +14,15 @@ enum Role {
 }
 
 model User {
-  id           String       @id @default(uuid())
-  email        String       @unique
-  passwordHash String       @map("password_hash")
-  role         Role         @default(BUYER)
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
-  sessions     Session[]
-  auditEvents  AuditEvent[]
+  id                 String       @id @default(uuid())
+  email              String       @unique
+  passwordHash       String       @map("password_hash")
+  role               Role         @default(BUYER)
+  mustChangePassword Boolean      @default(false) @map("must_change_password")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+  sessions           Session[]
+  auditEvents        AuditEvent[]
 
   @@map("users")
 }
@@ -46,6 +47,8 @@ enum AuditEventType {
   LOGOUT
   REGISTER
   LOGIN_FROM_NEW_DEVICE
+  PASSWORD_CHANGED
+  USER_INVITED
 }
 
 model AuditEvent {
@@ -63,4 +66,33 @@ model AuditEvent {
   @@index([type])
   @@index([createdAt])
   @@map("audit_events")
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CONVERTED
+  REJECTED
+}
+
+enum LeadRoleIntent {
+  BUYER
+  SUPPLIER
+}
+
+model Lead {
+  id         String          @id @default(uuid())
+  email      String
+  name       String?
+  message    String
+  roleIntent LeadRoleIntent? @map("role_intent")
+  status     LeadStatus      @default(NEW)
+  ipAddress  String?         @map("ip_address")
+  userAgent  String?         @map("user_agent")
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("leads")
 }

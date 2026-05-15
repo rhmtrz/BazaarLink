@@ -5,6 +5,8 @@ export {
 	logout,
 	loadSession,
 	setAuthCookie,
-	clearAuthCookie
+	clearAuthCookie,
+	changePassword,
+	inviteUser
 } from './service';
-export type { AuthResult, SessionContext } from './service';
+export type { AuthResult, SessionContext, InviteUserResult } from './service';
