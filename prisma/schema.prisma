@@ -48,6 +48,7 @@ enum AuditEventType {
   REGISTER
   LOGIN_FROM_NEW_DEVICE
   PASSWORD_CHANGED
+  USER_INVITED
 }
 
 model AuditEvent {

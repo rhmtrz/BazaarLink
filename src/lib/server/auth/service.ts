@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { error } from '@sveltejs/kit';
@@ -28,6 +29,20 @@ const changePasswordSchema = z.object({
 	currentPassword: z.string().min(1).max(72),
 	newPassword: z.string().min(8).max(72)
 });
+
+const inviteSchema = z.object({
+	email: z.email().max(254),
+	role: z.enum(['BUYER', 'SUPPLIER', 'ADMIN', 'INSPECTOR'])
+});
+
+type RoleLiteral = 'BUYER' | 'SUPPLIER' | 'ADMIN' | 'INSPECTOR';
+
+export type InviteUserResult = {
+	userId: string;
+	email: string;
+	role: RoleLiteral;
+	tempPassword: string;
+};
 
 type JwtPayload = { sub: string; jti: string };
 
@@ -188,6 +203,48 @@ export function setAuthCookie(cookies: Cookies, token: string): void {
 
 export function clearAuthCookie(cookies: Cookies): void {
 	cookies.delete(AUTH_COOKIE_NAME, { path: '/' });
+}
+
+function generateTempPassword(): string {
+	return randomBytes(12).toString('base64url').slice(0, 16);
+}
+
+export async function inviteUser(input: unknown, actorUserId: string): Promise<InviteUserResult> {
+	const parsed = inviteSchema.safeParse(input);
+	if (!parsed.success) throw error(400, parsed.error.issues[0].message);
+
+	const email = parsed.data.email.toLowerCase();
+	const existing = await prisma.user.findUnique({ where: { email } });
+	if (existing) throw error(409, 'Email already in use');
+
+	const tempPassword = generateTempPassword();
+	const passwordHash = await hashPassword(tempPassword);
+
+	const user = await prisma.user.create({
+		data: {
+			email,
+			passwordHash,
+			role: parsed.data.role,
+			mustChangePassword: true
+		}
+	});
+
+	await recordAuditEvent({
+		type: 'USER_INVITED',
+		actorUserId,
+		payload: {
+			invitedUserId: user.id,
+			invitedEmail: user.email,
+			invitedRole: user.role
+		}
+	});
+
+	return {
+		userId: user.id,
+		email: user.email,
+		role: user.role,
+		tempPassword
+	};
 }
 
 export async function changePassword(userId: string, input: unknown): Promise<void> {

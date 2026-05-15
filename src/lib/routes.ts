@@ -3,5 +3,7 @@ export const routes = {
 	healthz: '/healthz',
 	login: '/login',
 	logout: '/logout',
-	changePassword: '/change-password'
+	changePassword: '/change-password',
+	admin: '/admin',
+	adminUserNew: '/admin/users/new'
 } as const;
