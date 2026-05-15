@@ -121,7 +121,37 @@ model Supplier {
   kycReviewedBy   User?     @relation("KycReviewer", fields: [kycReviewedById], references: [id], onDelete: SetNull)
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
+  listings        Listing[]
 
   @@index([kycStatus])
   @@map("suppliers")
+}
+
+enum ListingStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+}
+
+model Listing {
+  id                   String        @id @default(uuid())
+  supplierId           String        @map("supplier_id")
+  supplier             Supplier      @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  title                String
+  description          String
+  material             String?
+  origin               String?
+  size                 String?
+  dimensions           String?
+  weave                String?
+  indicativePriceCents Int?          @map("indicative_price_cents")
+  tags                 String[]
+  status               ListingStatus @default(DRAFT)
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([supplierId])
+  @@index([createdAt])
+  @@map("listings")
 }
