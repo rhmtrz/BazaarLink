@@ -24,6 +24,11 @@ const credentialsSchema = z.object({
 	password: z.string().min(8).max(72)
 });
 
+const changePasswordSchema = z.object({
+	currentPassword: z.string().min(1).max(72),
+	newPassword: z.string().min(8).max(72)
+});
+
 type JwtPayload = { sub: string; jti: string };
 
 function getJwtSecret(): string {
@@ -183,6 +188,32 @@ export function setAuthCookie(cookies: Cookies, token: string): void {
 
 export function clearAuthCookie(cookies: Cookies): void {
 	cookies.delete(AUTH_COOKIE_NAME, { path: '/' });
+}
+
+export async function changePassword(userId: string, input: unknown): Promise<void> {
+	const parsed = changePasswordSchema.safeParse(input);
+	if (!parsed.success) throw error(400, parsed.error.issues[0].message);
+
+	const user = await prisma.user.findUnique({ where: { id: userId } });
+	if (!user) throw error(404, 'User not found');
+
+	const ok = await verifyPassword(parsed.data.currentPassword, user.passwordHash);
+	if (!ok) throw error(401, 'Current password is incorrect');
+
+	if (parsed.data.currentPassword === parsed.data.newPassword) {
+		throw error(400, 'New password must differ from current password');
+	}
+
+	const newHash = await hashPassword(parsed.data.newPassword);
+	await prisma.user.update({
+		where: { id: userId },
+		data: { passwordHash: newHash, mustChangePassword: false }
+	});
+
+	await recordAuditEvent({
+		type: 'PASSWORD_CHANGED',
+		actorUserId: userId
+	});
 }
 
 export async function loadSession(token: string): Promise<{ user: User; session: Session } | null> {

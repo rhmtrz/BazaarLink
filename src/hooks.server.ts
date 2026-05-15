@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { Handle, HandleServerError } from '@sveltejs/kit';
+import { redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import * as Sentry from '@sentry/sveltekit';
 import { env } from '$env/dynamic/private';
@@ -23,13 +23,23 @@ const userHandle: Handle = async ({ event, resolve }) => {
 			event.locals.user = {
 				id: loaded.user.id,
 				email: loaded.user.email,
-				role: loaded.user.role
+				role: loaded.user.role,
+				mustChangePassword: loaded.user.mustChangePassword
 			};
 			event.locals.session = { id: loaded.session.id };
 			Sentry.setUser({ id: loaded.user.id });
 		} else {
 			clearAuthCookie(event.cookies);
 		}
+	}
+
+	if (
+		event.locals.user?.mustChangePassword &&
+		event.route.id &&
+		event.route.id !== '/change-password' &&
+		event.route.id !== '/logout'
+	) {
+		throw redirect(303, '/change-password');
 	}
 
 	return resolve(event);

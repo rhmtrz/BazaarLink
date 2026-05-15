@@ -27,3 +27,6 @@ test-results
 
 # Uploads
 uploads/
+
+# Redis dump file (created by ad-hoc local redis-server)
+dump.rdb

@@ -14,14 +14,15 @@ enum Role {
 }
 
 model User {
-  id           String       @id @default(uuid())
-  email        String       @unique
-  passwordHash String       @map("password_hash")
-  role         Role         @default(BUYER)
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
-  sessions     Session[]
-  auditEvents  AuditEvent[]
+  id                 String       @id @default(uuid())
+  email              String       @unique
+  passwordHash       String       @map("password_hash")
+  role               Role         @default(BUYER)
+  mustChangePassword Boolean      @default(false) @map("must_change_password")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+  sessions           Session[]
+  auditEvents        AuditEvent[]
 
   @@map("users")
 }
@@ -46,6 +47,7 @@ enum AuditEventType {
   LOGOUT
   REGISTER
   LOGIN_FROM_NEW_DEVICE
+  PASSWORD_CHANGED
 }
 
 model AuditEvent {

@@ -12,6 +12,7 @@ declare global {
 				id: string;
 				email: string;
 				role: 'BUYER' | 'SUPPLIER' | 'ADMIN' | 'INSPECTOR';
+				mustChangePassword: boolean;
 			} | null;
 			session: { id: string } | null;
 		}

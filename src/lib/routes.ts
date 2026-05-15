@@ -2,5 +2,6 @@ export const routes = {
 	home: '/',
 	healthz: '/healthz',
 	login: '/login',
-	logout: '/logout'
+	logout: '/logout',
+	changePassword: '/change-password'
 } as const;
