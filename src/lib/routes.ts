@@ -1,4 +1,9 @@
 export const routes = {
 	home: '/',
-	healthz: '/healthz'
+	healthz: '/healthz',
+	login: '/login',
+	logout: '/logout',
+	changePassword: '/change-password',
+	admin: '/admin',
+	adminUserNew: '/admin/users/new'
 } as const;

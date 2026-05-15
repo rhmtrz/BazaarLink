@@ -1,0 +1,1 @@
+Audit log. `recordAuditEvent` writes an `audit_events` row for non-state-machine actions (admin overrides, role changes, login-from-new-device). The `transitions` table covers state-machine changes; this table is everything else.

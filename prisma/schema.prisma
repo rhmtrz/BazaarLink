@@ -1,7 +1,98 @@
 generator client {
-	provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-	provider = "postgresql"
+  provider = "postgresql"
+}
+
+enum Role {
+  BUYER
+  SUPPLIER
+  ADMIN
+  INSPECTOR
+}
+
+model User {
+  id                 String       @id @default(uuid())
+  email              String       @unique
+  passwordHash       String       @map("password_hash")
+  role               Role         @default(BUYER)
+  mustChangePassword Boolean      @default(false) @map("must_change_password")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+  sessions           Session[]
+  auditEvents        AuditEvent[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  ipAddress String?   @map("ip_address")
+  userAgent String?   @map("user_agent")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+enum AuditEventType {
+  LOGIN
+  LOGOUT
+  REGISTER
+  LOGIN_FROM_NEW_DEVICE
+  PASSWORD_CHANGED
+  USER_INVITED
+}
+
+model AuditEvent {
+  id          String         @id @default(uuid())
+  type        AuditEventType
+  actorUserId String?        @map("actor_user_id")
+  actor       User?          @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  sessionId   String?        @map("session_id")
+  ipAddress   String?        @map("ip_address")
+  userAgent   String?        @map("user_agent")
+  payload     Json?
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  @@index([actorUserId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("audit_events")
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CONVERTED
+  REJECTED
+}
+
+enum LeadRoleIntent {
+  BUYER
+  SUPPLIER
+}
+
+model Lead {
+  id         String          @id @default(uuid())
+  email      String
+  name       String?
+  message    String
+  roleIntent LeadRoleIntent? @map("role_intent")
+  status     LeadStatus      @default(NEW)
+  ipAddress  String?         @map("ip_address")
+  userAgent  String?         @map("user_agent")
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("leads")
 }
