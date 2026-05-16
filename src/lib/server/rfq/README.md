@@ -1,1 +1,1 @@
-Buyer RFQ + supplier quote state machine.
+RFQ state machine. `canTransition(rfq, from, to, actor, reason?)` is the contract for all RFQ state changes — pure, no DB, exhaustively testable. Encodes the architecture-plan §4 FSM: DRAFT → SUBMITTED → QUOTED → ACCEPTED | REJECTED | EXPIRED. 5.3 table-tests every allowed and every denied transition; 5.4 ships the action handlers that call this function and write the Transition row.
