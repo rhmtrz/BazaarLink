@@ -3,6 +3,7 @@ import type { Listing, Photo } from '@prisma/client';
 import { error } from '@sveltejs/kit';
 import { z } from 'zod';
 import { prisma } from '$lib/server/prisma';
+import { recordAuditEvent } from '$lib/server/audit';
 import { deleteImage, saveImage } from '$lib/server/storage';
 
 const EXT_BY_MIME: Record<string, string> = {
@@ -88,6 +89,100 @@ export async function getPublishedListingById(id: string) {
 	});
 }
 
+const hideSchema = z.object({
+	reason: z.string().trim().min(1).max(500)
+});
+
+type AdminListInput = { status?: 'DRAFT' | 'PUBLISHED' | 'HIDDEN' };
+
+export async function listAllListings(input: AdminListInput) {
+	return prisma.listing.findMany({
+		where: input.status ? { status: input.status } : undefined,
+		include: {
+			supplier: {
+				select: { companyName: true, country: true, user: { select: { email: true } } }
+			},
+			_count: { select: { photos: true } }
+		},
+		orderBy: { createdAt: 'desc' },
+		take: 100
+	});
+}
+
+export async function getListingForAdmin(id: string) {
+	return prisma.listing.findUnique({
+		where: { id },
+		include: {
+			supplier: {
+				select: { id: true, companyName: true, country: true, user: { select: { email: true } } }
+			},
+			photos: { orderBy: { createdAt: 'asc' } }
+		}
+	});
+}
+
+export async function hideListing(
+	listingId: string,
+	adminUserId: string,
+	input: unknown
+): Promise<Listing> {
+	const parsed = hideSchema.safeParse(input);
+	if (!parsed.success) throw error(400, parsed.error.issues[0].message);
+
+	const listing = await prisma.listing.findUnique({
+		where: { id: listingId },
+		include: { supplier: { select: { id: true, user: { select: { email: true } } } } }
+	});
+	if (!listing) throw error(404, 'Listing not found');
+	if (listing.status === 'HIDDEN') throw error(400, 'Listing is already hidden');
+
+	const updated = await prisma.listing.update({
+		where: { id: listingId },
+		data: { status: 'HIDDEN' }
+	});
+
+	await recordAuditEvent({
+		type: 'LISTING_HIDDEN',
+		actorUserId: adminUserId,
+		payload: {
+			listingId: listing.id,
+			supplierId: listing.supplier.id,
+			supplierEmail: listing.supplier.user.email,
+			title: listing.title,
+			reason: parsed.data.reason
+		}
+	});
+
+	return updated;
+}
+
+export async function restoreListing(listingId: string, adminUserId: string): Promise<Listing> {
+	const listing = await prisma.listing.findUnique({
+		where: { id: listingId },
+		include: { supplier: { select: { id: true, user: { select: { email: true } } } } }
+	});
+	if (!listing) throw error(404, 'Listing not found');
+	if (listing.status !== 'HIDDEN') throw error(400, 'Listing is not hidden');
+
+	const updated = await prisma.listing.update({
+		where: { id: listingId },
+		data: { status: 'DRAFT' }
+	});
+
+	await recordAuditEvent({
+		type: 'LISTING_RESTORED',
+		actorUserId: adminUserId,
+		payload: {
+			listingId: listing.id,
+			supplierId: listing.supplier.id,
+			supplierEmail: listing.supplier.user.email,
+			title: listing.title
+		}
+	});
+
+	return updated;
+}
+
 export async function getListingWithPhotos(listingId: string, userId: string) {
 	const listing = await prisma.listing.findUnique({
 		where: { id: listingId },
@@ -169,6 +264,9 @@ export async function publishListing(listingId: string, userId: string): Promise
 	});
 	if (!listing) throw error(404, 'Listing not found');
 	if (listing.supplier.userId !== userId) throw error(403, 'Not your listing');
+	if (listing.status === 'HIDDEN') {
+		throw error(403, 'This listing was hidden by an admin and cannot be published.');
+	}
 	if (listing.supplier.kycStatus !== 'APPROVED') {
 		throw error(403, 'KYC approval required before publishing listings');
 	}
@@ -182,6 +280,9 @@ export async function unpublishListing(listingId: string, userId: string): Promi
 	});
 	if (!listing) throw error(404, 'Listing not found');
 	if (listing.supplier.userId !== userId) throw error(403, 'Not your listing');
+	if (listing.status !== 'PUBLISHED') {
+		throw error(400, 'Listing is not currently published.');
+	}
 	return prisma.listing.update({ where: { id: listingId }, data: { status: 'DRAFT' } });
 }
 

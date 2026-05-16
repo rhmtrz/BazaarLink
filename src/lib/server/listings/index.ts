@@ -11,5 +11,9 @@ export {
 	unpublishListing,
 	deleteListing,
 	listPublishedListings,
-	getPublishedListingById
+	getPublishedListingById,
+	listAllListings,
+	getListingForAdmin,
+	hideListing,
+	restoreListing
 } from './service';

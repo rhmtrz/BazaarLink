@@ -68,7 +68,15 @@
 			</div>
 		</header>
 
-		{#if !canPublish && listing.status === 'DRAFT'}
+		{#if listing.status === 'HIDDEN'}
+			<div
+				role="status"
+				class="rounded border border-red-700 bg-red-950 px-3 py-2 text-sm text-red-200"
+			>
+				This listing was hidden by an admin. You can still edit it, but you can't republish until
+				it's restored. Contact us if you'd like to discuss.
+			</div>
+		{:else if !canPublish && listing.status === 'DRAFT'}
 			<div
 				role="status"
 				class="rounded border border-amber-700 bg-amber-950 px-3 py-2 text-sm text-amber-100"

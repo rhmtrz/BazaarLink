@@ -53,6 +53,8 @@ enum AuditEventType {
   USER_INVITED
   KYC_APPROVED
   KYC_REJECTED
+  LISTING_HIDDEN
+  LISTING_RESTORED
 }
 
 model AuditEvent {
