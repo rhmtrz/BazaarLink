@@ -86,14 +86,12 @@
 			</div>
 
 			{#if data.user}
-				<button
-					type="button"
-					disabled
-					title="RFQ flow coming soon"
-					class="cursor-not-allowed rounded bg-primary px-4 py-2 text-sm font-medium text-white opacity-50"
+				<a
+					href={resolve(`/listings/${listing.id}/rfq/new`)}
+					class="rounded bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
 				>
 					Request a quote
-				</button>
+				</a>
 			{:else}
 				<a
 					href={resolve('/login')}
