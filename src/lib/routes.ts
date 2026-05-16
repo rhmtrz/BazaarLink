@@ -7,6 +7,7 @@ export const routes = {
 	admin: '/admin',
 	adminUserNew: '/admin/users/new',
 	adminSuppliers: '/admin/suppliers',
+	listings: '/listings',
 	supplierProfile: '/supplier/profile',
 	supplierListings: '/supplier/listings',
 	supplierListingNew: '/supplier/listings/new'

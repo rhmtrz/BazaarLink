@@ -9,5 +9,7 @@ export {
 	updateListing,
 	publishListing,
 	unpublishListing,
-	deleteListing
+	deleteListing,
+	listPublishedListings,
+	getPublishedListingById
 } from './service';

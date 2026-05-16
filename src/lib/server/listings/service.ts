@@ -61,6 +61,33 @@ export async function getListingById(id: string) {
 	});
 }
 
+const APPROVED_PUBLISHED = {
+	status: 'PUBLISHED' as const,
+	supplier: { kycStatus: 'APPROVED' as const }
+};
+
+export async function listPublishedListings() {
+	return prisma.listing.findMany({
+		where: APPROVED_PUBLISHED,
+		include: {
+			supplier: { select: { companyName: true, country: true } },
+			photos: { take: 1, orderBy: { createdAt: 'asc' } }
+		},
+		orderBy: { createdAt: 'desc' },
+		take: 100
+	});
+}
+
+export async function getPublishedListingById(id: string) {
+	return prisma.listing.findFirst({
+		where: { id, ...APPROVED_PUBLISHED },
+		include: {
+			supplier: { select: { companyName: true, country: true } },
+			photos: { orderBy: { createdAt: 'asc' } }
+		}
+	});
+}
+
 export async function getListingWithPhotos(listingId: string, userId: string) {
 	const listing = await prisma.listing.findUnique({
 		where: { id: listingId },
