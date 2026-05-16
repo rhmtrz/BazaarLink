@@ -1,5 +1,6 @@
 import type { RfqStatus } from '@prisma/client';
 
+export type { RfqStatus };
 export type TransitionActor = { kind: 'user'; userId: string } | { kind: 'system' };
 
 export type RfqInputForTransition = {
