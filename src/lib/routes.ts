@@ -11,5 +11,7 @@ export const routes = {
 	listings: '/listings',
 	supplierProfile: '/supplier/profile',
 	supplierListings: '/supplier/listings',
-	supplierListingNew: '/supplier/listings/new'
+	supplierListingNew: '/supplier/listings/new',
+	supplierRfqs: '/supplier/rfqs',
+	rfqList: '/rfq'
 } as const;

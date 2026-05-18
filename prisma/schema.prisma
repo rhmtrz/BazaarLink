@@ -25,6 +25,8 @@ model User {
   auditEvents        AuditEvent[]
   supplier           Supplier?
   suppliersReviewed  Supplier[]   @relation("KycReviewer")
+  rfqsAsBuyer        RFQ[]        @relation("RfqBuyer")
+  transitionsActedBy Transition[] @relation("TransitionActor")
 
   @@map("users")
 }
@@ -124,6 +126,7 @@ model Supplier {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   listings        Listing[]
+  quotes          Quote[]
 
   @@index([kycStatus])
   @@map("suppliers")
@@ -152,6 +155,7 @@ model Listing {
   createdAt            DateTime      @default(now()) @map("created_at")
   updatedAt            DateTime      @updatedAt @map("updated_at")
   photos               Photo[]
+  rfqs                 RFQ[]
 
   @@index([status])
   @@index([supplierId])
@@ -171,4 +175,79 @@ model Photo {
 
   @@index([listingId])
   @@map("listing_photos")
+}
+
+enum RfqStatus {
+  DRAFT
+  SUBMITTED
+  QUOTED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum QuoteStatus {
+  ACTIVE
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+model RFQ {
+  id          String       @id @default(uuid())
+  buyerId     String       @map("buyer_id")
+  buyer       User         @relation("RfqBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  listingId   String       @map("listing_id")
+  listing     Listing      @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  message     String
+  quantity    Int?
+  status      RfqStatus    @default(DRAFT)
+  expiresAt   DateTime?    @map("expires_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  quotes      Quote[]
+  transitions Transition[]
+
+  @@index([buyerId])
+  @@index([listingId])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([createdAt])
+  @@map("rfqs")
+}
+
+model Quote {
+  id         String      @id @default(uuid())
+  rfqId      String      @map("rfq_id")
+  rfq        RFQ         @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  supplierId String      @map("supplier_id")
+  supplier   Supplier    @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  priceCents Int         @map("price_cents")
+  quantity   Int
+  message    String
+  status     QuoteStatus @default(ACTIVE)
+  validUntil DateTime?   @map("valid_until")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  @@index([rfqId])
+  @@index([supplierId])
+  @@index([status])
+  @@map("quotes")
+}
+
+model Transition {
+  id         String    @id @default(uuid())
+  rfqId      String    @map("rfq_id")
+  rfq        RFQ       @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  actorId    String?   @map("actor_id")
+  actor      User?     @relation("TransitionActor", fields: [actorId], references: [id], onDelete: SetNull)
+  fromStatus RfqStatus @map("from_status")
+  toStatus   RfqStatus @map("to_status")
+  reason     String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([rfqId])
+  @@index([createdAt])
+  @@map("transitions")
 }
