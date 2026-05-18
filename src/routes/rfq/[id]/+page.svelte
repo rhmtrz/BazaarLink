@@ -155,7 +155,7 @@
 					{#each rfq.transitions as t (t.id)}
 						<li>
 							<span class="text-neutral-300">{t.fromStatus} → {t.toStatus}</span>
-							by {t.actor.email} · {fmt(t.createdAt)}
+							by {t.actor?.email ?? 'system'} · {fmt(t.createdAt)}
 							{#if t.reason}
 								<div class="ml-2 text-neutral-500">"{t.reason}"</div>
 							{/if}

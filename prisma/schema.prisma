@@ -190,6 +190,7 @@ enum QuoteStatus {
   ACTIVE
   ACCEPTED
   REJECTED
+  EXPIRED
 }
 
 model RFQ {
@@ -239,8 +240,8 @@ model Transition {
   id         String    @id @default(uuid())
   rfqId      String    @map("rfq_id")
   rfq        RFQ       @relation(fields: [rfqId], references: [id], onDelete: Cascade)
-  actorId    String    @map("actor_id")
-  actor      User      @relation("TransitionActor", fields: [actorId], references: [id], onDelete: Cascade)
+  actorId    String?   @map("actor_id")
+  actor      User?     @relation("TransitionActor", fields: [actorId], references: [id], onDelete: SetNull)
   fromStatus RfqStatus @map("from_status")
   toStatus   RfqStatus @map("to_status")
   reason     String?

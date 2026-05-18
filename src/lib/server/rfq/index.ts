@@ -4,6 +4,8 @@ export {
 	sendQuote,
 	acceptQuote,
 	rejectRfq,
+	expireRfq,
+	findExpiredRfqIds,
 	listMyRfqs,
 	getMyRfqById,
 	listIncomingRfqs,

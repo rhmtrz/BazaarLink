@@ -3,6 +3,9 @@ import { error } from '@sveltejs/kit';
 import { z } from 'zod';
 import { prisma } from '$lib/server/prisma';
 
+const RFQ_EXPIRY_DAYS = Number(process.env.RFQ_EXPIRY_DAYS ?? '7');
+const MS_PER_DAY = 86_400_000;
+
 export type { RfqStatus };
 export type TransitionActor = { kind: 'user'; userId: string } | { kind: 'system' };
 
@@ -114,8 +117,40 @@ export async function submitRfq(buyerUserId: string, listingId: string, input: u
 			listingId,
 			message: parsed.data.message,
 			quantity: parsed.data.quantity ?? null,
-			status: 'SUBMITTED'
+			status: 'SUBMITTED',
+			expiresAt: new Date(Date.now() + RFQ_EXPIRY_DAYS * MS_PER_DAY)
 		}
+	});
+}
+
+export async function findExpiredRfqIds(now: Date = new Date()): Promise<string[]> {
+	const rows = await prisma.rFQ.findMany({
+		where: { status: { in: ['SUBMITTED', 'QUOTED'] }, expiresAt: { lt: now } },
+		select: { id: true },
+		take: 500
+	});
+	return rows.map((r) => r.id);
+}
+
+export async function expireRfq(rfqId: string): Promise<void> {
+	const rfq = await prisma.rFQ.findUnique({
+		where: { id: rfqId },
+		include: { listing: { include: { supplier: { select: { userId: true } } } } }
+	});
+	if (!rfq) return;
+
+	const check = canTransition(rfq, rfq.status, 'EXPIRED', { kind: 'system' });
+	if (!check.ok) return;
+
+	await prisma.$transaction(async (tx) => {
+		await tx.rFQ.update({ where: { id: rfqId }, data: { status: 'EXPIRED' } });
+		await tx.quote.updateMany({
+			where: { rfqId, status: 'ACTIVE' },
+			data: { status: 'EXPIRED' }
+		});
+		await tx.transition.create({
+			data: { rfqId, actorId: null, fromStatus: rfq.status, toStatus: 'EXPIRED' }
+		});
 	});
 }
 
